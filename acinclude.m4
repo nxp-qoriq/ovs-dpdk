@@ -180,9 +180,13 @@ AC_DEFUN([OVS_CHECK_DPDK], [
         DPDK_INCLUDE="$with_dpdk/include"
         # If 'with_dpdk' is passed install directory, point to headers
         # installed in $DESTDIR/$prefix/include/dpdk
-        AC_CHECK_FILE([$DPDK_INCLUDE/rte_config.h], [],
+	# AC_CHECK_FILES only works when not cross compiling
+	if test "$cross_compiling" != "yes"
+	then
+                AC_CHECK_FILE([$DPDK_INCLUDE/rte_config.h], [],
                       [AC_CHECK_FILE([$DPDK_INCLUDE/dpdk/rte_config.h],
                                      [DPDK_INCLUDE=$DPDK_INCLUDE/dpdk], [])])
+	fi
         DPDK_LIB_DIR="$with_dpdk/lib"
         ;;
     esac
