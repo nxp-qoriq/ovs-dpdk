@@ -468,7 +468,6 @@ dpdk_mp_get(int socket_id, int mtu) OVS_REQUIRES(dpdk_mutex)
     struct dpdk_mp *dmp = NULL;
     char mp_name[RTE_MEMPOOL_NAMESIZE];
     unsigned mp_size;
-    struct rte_pktmbuf_pool_private mbp_priv;
 
     LIST_FOR_EACH (dmp, list_node, &dpdk_mp_list) {
         if (dmp->socket_id == socket_id && dmp->mtu == mtu) {
@@ -481,9 +480,6 @@ dpdk_mp_get(int socket_id, int mtu) OVS_REQUIRES(dpdk_mutex)
     dmp->socket_id = socket_id;
     dmp->mtu = mtu;
     dmp->refcount = 1;
-    mbp_priv.mbuf_data_room_size = MBUF_SIZE(mtu) - sizeof(struct dp_packet);
-    mbp_priv.mbuf_priv_size = sizeof (struct dp_packet)
-                              - sizeof (struct rte_mbuf);
     /* XXX: this is a really rough method of provisioning memory.
      * It's impossible to determine what the exact memory requirements are when
      * the number of ports and rxqs that utilize a particular mempool can change
@@ -500,13 +496,11 @@ dpdk_mp_get(int socket_id, int mtu) OVS_REQUIRES(dpdk_mutex)
                      dmp->mtu, dmp->socket_id, mp_size) < 0) {
             goto fail;
         }
-
-        dmp->mp = rte_mempool_create(mp_name, mp_size, MBUF_SIZE(mtu),
+	dmp->mp = rte_pktmbuf_pool_create(mp_name, mp_size,
                                      MP_CACHE_SZ,
-                                     sizeof(struct rte_pktmbuf_pool_private),
-                                     rte_pktmbuf_pool_init, &mbp_priv,
-                                     ovs_rte_pktmbuf_init, NULL,
-                                     socket_id, 0);
+                                     sizeof (struct dp_packet) - sizeof (struct rte_mbuf),
+                                     MBUF_SIZE(mtu) - sizeof(struct dp_packet),
+                                     socket_id);
     } while (!dmp->mp && rte_errno == ENOMEM && (mp_size /= 2) >= MIN_NB_MBUF);
 
     if (dmp->mp == NULL) {
@@ -514,6 +508,8 @@ dpdk_mp_get(int socket_id, int mtu) OVS_REQUIRES(dpdk_mutex)
     } else {
         VLOG_DBG("Allocated \"%s\" mempool with %u mbufs", mp_name, mp_size );
     }
+    /* pktmbuf only prepare the rte_mbuf, need to prepare the ovs bufs */	
+    rte_mempool_obj_iter(dmp->mp, ovs_rte_pktmbuf_init, NULL);
 
     ovs_list_push_back(&dpdk_mp_list, &dmp->list_node);
     return dmp;
