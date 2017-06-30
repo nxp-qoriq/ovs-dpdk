@@ -40,7 +40,7 @@ Build requirements
 In addition to the requirements described in :doc:`general`, building Open
 vSwitch with DPDK will require the following:
 
-- DPDK 16.11
+- DPDK 17.05.1
 
 - A `DPDK supported NIC`_
 
