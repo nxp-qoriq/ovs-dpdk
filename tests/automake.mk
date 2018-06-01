@@ -86,6 +86,7 @@ TESTSUITE_AT = \
 	tests/ovsdb-idl.at \
 	tests/ovsdb-lock.at \
 	tests/ovsdb-rbac.at \
+	tests/ovsdb-cluster.at \
 	tests/ovs-vsctl.at \
 	tests/ovs-xapi-sync.at \
 	tests/stp.at \
@@ -119,7 +120,8 @@ SYSTEM_TESTSUITE_AT = \
 	tests/system-common-macros.at \
 	tests/system-ovn.at \
 	tests/system-layer3-tunnels.at \
-	tests/system-traffic.at
+	tests/system-traffic.at \
+	tests/system-interface.at
 
 SYSTEM_OFFLOADS_TESTSUITE_AT = \
 	tests/system-common-macros.at \

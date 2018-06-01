@@ -60,6 +60,7 @@
 struct dpif_flow_stats;
 struct ofproto_async_msg;
 struct ofproto_dpif;
+struct uuid;
 struct xlate_cache;
 
 /* Number of implemented OpenFlow tables. */
@@ -172,7 +173,10 @@ struct group_dpif *group_dpif_lookup(struct ofproto_dpif *,
     DPIF_SUPPORT_FIELD(size_t, sample_nesting, "Sample nesting")            \
                                                                             \
     /* OVS_CT_ATTR_EVENTMASK supported by OVS_ACTION_ATTR_CT action. */     \
-    DPIF_SUPPORT_FIELD(bool, ct_eventmask, "Conntrack eventmask")
+    DPIF_SUPPORT_FIELD(bool, ct_eventmask, "Conntrack eventmask")           \
+                                                                            \
+    /* True if the datapath supports OVS_ACTION_ATTR_CT_CLEAR action. */    \
+    DPIF_SUPPORT_FIELD(bool, ct_clear, "Conntrack clear")
 
 /* Stores the various features which the corresponding backer supports. */
 struct dpif_backer_support {
@@ -245,7 +249,12 @@ struct ofport_dpif *odp_port_to_ofport(const struct dpif_backer *, odp_port_t);
 /* A bridge based on a "dpif" datapath. */
 
 struct ofproto_dpif {
-    struct hmap_node all_ofproto_dpifs_node; /* In 'all_ofproto_dpifs'. */
+    /* In 'all_ofproto_dpifs_by_name'. */
+    struct hmap_node all_ofproto_dpifs_by_name_node;
+
+    /* In 'all_ofproto_dpifs_by_uuid'. */
+    struct hmap_node all_ofproto_dpifs_by_uuid_node;
+
     struct ofproto up;
     struct dpif_backer *backer;
 
@@ -298,10 +307,8 @@ struct ofproto_dpif {
     uint64_t ams_seqno;
 };
 
-/* All existing ofproto_dpif instances, indexed by ->up.name. */
-extern struct hmap all_ofproto_dpifs;
-
-struct ofproto_dpif *ofproto_dpif_lookup(const char *name);
+struct ofproto_dpif *ofproto_dpif_lookup_by_name(const char *name);
+struct ofproto_dpif *ofproto_dpif_lookup_by_uuid(const struct uuid *uuid);
 
 ovs_version_t ofproto_dpif_get_tables_version(struct ofproto_dpif *);
 

@@ -360,6 +360,7 @@ enum ovs_key_attr {
 	OVS_KEY_ATTR_CT_LABELS,	/* 16-octet connection tracking labels */
 	OVS_KEY_ATTR_CT_ORIG_TUPLE_IPV4,   /* struct ovs_key_ct_tuple_ipv4 */
 	OVS_KEY_ATTR_CT_ORIG_TUPLE_IPV6,   /* struct ovs_key_ct_tuple_ipv6 */
+	OVS_KEY_ATTR_NSH,       /* Nested set of ovs_nsh_key_* */
 
 #ifdef __KERNEL__
 	/* Only used within kernel data path. */
@@ -369,7 +370,6 @@ enum ovs_key_attr {
 #ifndef __KERNEL__
 	/* Only used within userspace data path. */
 	OVS_KEY_ATTR_PACKET_TYPE,  /* be32 packet type */
-	OVS_KEY_ATTR_NSH,	   /* Nested set of ovs_nsh_key_* */
 #endif
 
 	__OVS_KEY_ATTR_MAX
@@ -504,9 +504,9 @@ enum ovs_nsh_key_attr {
 
 struct ovs_nsh_key_base {
 	__u8 flags;
+	__u8 ttl;
 	__u8 mdtype;
 	__u8 np;
-	__u8 pad;
 	__be32 path_hdr;
 };
 
@@ -883,6 +883,7 @@ enum ovs_nat_attr {
  * @OVS_ACTION_ATTR_PUSH_ETH: Push a new outermost Ethernet header onto the
  * packet.
  * @OVS_ACTION_ATTR_POP_ETH: Pop the outermost Ethernet header off the packet.
+ * @OVS_ACTION_ATTR_CT_CLEAR: Clear conntrack state from the packet.
  * @OVS_ACTION_ATTR_PUSH_NSH: push NSH header to the packet.
  * @OVS_ACTION_ATTR_POP_NSH: pop the outermost NSH header off the packet.
  *
@@ -920,14 +921,15 @@ enum ovs_action_attr {
 	OVS_ACTION_ATTR_TRUNC,        /* u32 struct ovs_action_trunc. */
 	OVS_ACTION_ATTR_PUSH_ETH,     /* struct ovs_action_push_eth. */
 	OVS_ACTION_ATTR_POP_ETH,      /* No argument. */
+	OVS_ACTION_ATTR_CT_CLEAR,     /* No argument. */
+	OVS_ACTION_ATTR_PUSH_NSH,     /* Nested OVS_NSH_KEY_ATTR_*. */
+	OVS_ACTION_ATTR_POP_NSH,      /* No argument. */
 
 #ifndef __KERNEL__
 	OVS_ACTION_ATTR_TUNNEL_PUSH,   /* struct ovs_action_push_tnl*/
 	OVS_ACTION_ATTR_TUNNEL_POP,    /* u32 port number. */
 	OVS_ACTION_ATTR_CLONE,         /* Nested OVS_CLONE_ATTR_*.  */
 	OVS_ACTION_ATTR_METER,         /* u32 meter number. */
-	OVS_ACTION_ATTR_PUSH_NSH,      /* Nested OVS_NSH_KEY_ATTR_*. */
-	OVS_ACTION_ATTR_POP_NSH,       /* No argument. */
 #endif
 	__OVS_ACTION_ATTR_MAX,	      /* Nothing past this will be accepted
 				       * from userspace. */

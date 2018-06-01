@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of version 2.1 of the GNU Lesser General
@@ -14,6 +14,20 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 #
-# Copyright (C) 2016 Nicira, Inc.
+# Copyright (C) 2017 Ericsson AB
 
-ovs-appctl dpctl/dump-conntrack
+for bridge in `ovs-vsctl -- --real list-br`
+do
+    PROTOCOLS="$(ovs-vsctl get Bridge "$bridge" protocols)"
+    if [ "$PROTOCOLS" = "[]" ]
+    then
+        echo "ovs-ofctl $1 ${bridge} $2"
+        eval ovs-ofctl $1 "${bridge}" $2
+    else
+        LENGTHPRO="$(expr length "$PROTOCOLS")"
+        COMMAIND="$(expr index "$PROTOCOLS" ,)"
+        echo "ovs-ofctl $1 -O${PROTOCOLS:${COMMAIND}+2:${LENGTHPRO}-${COMMAIND}-4} ${bridge} $2"
+        eval ovs-ofctl $1 -O"${PROTOCOLS:${COMMAIND}+2:${LENGTHPRO}-${COMMAIND}-4}" "${bridge}" $2
+    fi
+    echo ""
+done

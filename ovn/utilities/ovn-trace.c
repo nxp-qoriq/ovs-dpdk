@@ -1832,6 +1832,7 @@ trace_actions(const struct ovnact *ovnacts, size_t ovnacts_len,
             break;
 
         case OVNACT_ND_NA:
+        case OVNACT_ND_NA_ROUTER:
             execute_nd_na(ovnact_get_ND_NA(a), dp, uflow, table_id, pipeline,
                           super);
             break;
@@ -1887,6 +1888,10 @@ trace_actions(const struct ovnact *ovnacts, size_t ovnacts_len,
 
         case OVNACT_LOG:
             execute_log(ovnact_get_LOG(a), uflow, super);
+            break;
+
+        case OVNACT_SET_METER:
+            /* Nothing to do. */
             break;
         }
 

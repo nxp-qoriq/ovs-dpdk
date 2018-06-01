@@ -14,6 +14,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 #
-# Copyright (C) 2013 Nicira, Inc.
+# Copyright (C) 2017 Ericsson AB
 
-ovs-appctl bfd/show
+for pid in $(pgrep ovs-vswitchd)
+do
+    for i in $(ls /proc/$pid/task)
+    do
+        taskset -pc $i
+    done
+done
