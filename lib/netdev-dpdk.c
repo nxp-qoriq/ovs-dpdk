@@ -512,12 +512,6 @@ dpdk_mp_create(struct netdev_dpdk *dev, int mtu)
     uint32_t n_mbufs;
     uint32_t hash = hash_string(netdev_name, 0);
     struct rte_mempool *mp = NULL;
-    uint8_t no_default_mbufs = 0;
-    char *env_no_default_mbuf = NULL;
-
-    env_no_default_mbuf = getenv("DPDK_EXCLUDE_DEFAULT_MBUF");
-    if (env_no_default_mbuf)
-        no_default_mbufs = 0;
 
     /*
      * XXX: rough estimation of number of mbufs required for this port:
@@ -528,10 +522,8 @@ dpdk_mp_create(struct netdev_dpdk *dev, int mtu)
      */
     n_mbufs = dev->requested_n_rxq * dev->requested_rxq_size
               + dev->requested_n_txq * dev->requested_txq_size
-              + MIN(RTE_MAX_LCORE, dev->requested_n_rxq) * NETDEV_MAX_BURST;
-
-    if (!no_default_mbufs)
-        n_mbufs += MIN_NB_MBUF;
+              + MIN(RTE_MAX_LCORE, dev->requested_n_rxq) * NETDEV_MAX_BURST
+              + MIN_NB_MBUF;
 
     ovs_mutex_lock(&dpdk_mp_mutex);
     do {
