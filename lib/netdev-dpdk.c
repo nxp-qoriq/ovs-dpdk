@@ -517,7 +517,7 @@ dpdk_mp_create(struct netdev_dpdk *dev, int mtu)
 
     env_no_default_mbuf = getenv("DPDK_EXCLUDE_DEFAULT_MBUF");
     if (env_no_default_mbuf)
-        no_default_mbufs = 1;
+        no_default_mbufs = 0;
 
     /*
      * XXX: rough estimation of number of mbufs required for this port:
