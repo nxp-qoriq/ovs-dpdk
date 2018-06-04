@@ -27,6 +27,7 @@
 #include "ovn/expr.h"
 #include "ovn/lib/ovn-l7.h"
 #include "ovn/lib/ovn-sb-idl.h"
+#include "ovn/lib/extend-table.h"
 #include "packets.h"
 #include "physical.h"
 #include "simap.h"
@@ -61,7 +62,8 @@ static void consider_logical_flow(struct controller_ctx *ctx,
                                   const struct chassis_index *chassis_index,
                                   const struct sbrec_logical_flow *lflow,
                                   const struct hmap *local_datapaths,
-                                  struct group_table *group_table,
+                                  struct ovn_extend_table *group_table,
+                                  struct ovn_extend_table *meter_table,
                                   const struct sbrec_chassis *chassis,
                                   struct hmap *dhcp_opts,
                                   struct hmap *dhcpv6_opts,
@@ -129,21 +131,13 @@ is_switch(const struct sbrec_datapath_binding *ldp)
 
 }
 
-static bool
-is_gateway_router(const struct sbrec_datapath_binding *ldp,
-                  const struct hmap *local_datapaths)
-{
-    struct local_datapath *ld =
-        get_local_datapath(local_datapaths, ldp->tunnel_key);
-    return ld ? ld->has_local_l3gateway : false;
-}
-
 /* Adds the logical flows from the Logical_Flow table to flow tables. */
 static void
 add_logical_flows(struct controller_ctx *ctx,
                   const struct chassis_index *chassis_index,
                   const struct hmap *local_datapaths,
-                  struct group_table *group_table,
+                  struct ovn_extend_table *group_table,
+                  struct ovn_extend_table *meter_table,
                   const struct sbrec_chassis *chassis,
                   const struct shash *addr_sets,
                   struct hmap *flow_table,
@@ -174,7 +168,7 @@ add_logical_flows(struct controller_ctx *ctx,
     SBREC_LOGICAL_FLOW_FOR_EACH (lflow, ctx->ovnsb_idl) {
         consider_logical_flow(ctx, chassis_index,
                               lflow, local_datapaths,
-                              group_table, chassis,
+                              group_table, meter_table, chassis,
                               &dhcp_opts, &dhcpv6_opts, &nd_ra_opts,
                               &conj_id_ofs, addr_sets, flow_table,
                               active_tunnels, local_lport_ids);
@@ -190,7 +184,8 @@ consider_logical_flow(struct controller_ctx *ctx,
                       const struct chassis_index *chassis_index,
                       const struct sbrec_logical_flow *lflow,
                       const struct hmap *local_datapaths,
-                      struct group_table *group_table,
+                      struct ovn_extend_table *group_table,
+                      struct ovn_extend_table *meter_table,
                       const struct sbrec_chassis *chassis,
                       struct hmap *dhcp_opts,
                       struct hmap *dhcpv6_opts,
@@ -261,8 +256,8 @@ consider_logical_flow(struct controller_ctx *ctx,
         .lookup_port = lookup_port_cb,
         .aux = &aux,
         .is_switch = is_switch(ldp),
-        .is_gateway_router = is_gateway_router(ldp, local_datapaths),
         .group_table = group_table,
+        .meter_table = meter_table,
 
         .pipeline = ingress ? OVNACT_P_INGRESS : OVNACT_P_EGRESS,
         .ingress_ptable = OFTABLE_LOG_INGRESS_PIPELINE,
@@ -434,14 +429,15 @@ lflow_run(struct controller_ctx *ctx,
           const struct sbrec_chassis *chassis,
           const struct chassis_index *chassis_index,
           const struct hmap *local_datapaths,
-          struct group_table *group_table,
+          struct ovn_extend_table *group_table,
+          struct ovn_extend_table *meter_table,
           const struct shash *addr_sets,
           struct hmap *flow_table,
           struct sset *active_tunnels,
           struct sset *local_lport_ids)
 {
     add_logical_flows(ctx, chassis_index, local_datapaths,
-                      group_table, chassis, addr_sets, flow_table,
+                      group_table, meter_table, chassis, addr_sets, flow_table,
                       active_tunnels, local_lport_ids);
     add_neighbor_flows(ctx, flow_table);
 }

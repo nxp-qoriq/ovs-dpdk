@@ -79,7 +79,8 @@ static void send_garp_run(struct controller_ctx *ctx,
                           struct sset *active_tunnels);
 static void pinctrl_handle_nd_na(const struct flow *ip_flow,
                                  const struct match *md,
-                                 struct ofpbuf *userdata);
+                                 struct ofpbuf *userdata,
+                                 bool is_router);
 static void reload_metadata(struct ofpbuf *ofpacts,
                             const struct match *md);
 static void pinctrl_handle_put_nd_ra_opts(
@@ -916,11 +917,29 @@ pinctrl_handle_dns_lookup(
     out_udp->udp_len = htons(new_l4_size);
     out_udp->udp_csum = 0;
 
-    struct ip_header *out_ip = dp_packet_l3(&pkt_out);
-    out_ip->ip_tot_len = htons(pkt_out.l4_ofs - pkt_out.l3_ofs + new_l4_size);
-    /* Checksum needs to be initialized to zero. */
-    out_ip->ip_csum = 0;
-    out_ip->ip_csum = csum(out_ip, sizeof *out_ip);
+    struct eth_header *eth = dp_packet_data(&pkt_out);
+    if (eth->eth_type == htons(ETH_TYPE_IP)) {
+        struct ip_header *out_ip = dp_packet_l3(&pkt_out);
+        out_ip->ip_tot_len = htons(pkt_out.l4_ofs - pkt_out.l3_ofs
+                                   + new_l4_size);
+        /* Checksum needs to be initialized to zero. */
+        out_ip->ip_csum = 0;
+        out_ip->ip_csum = csum(out_ip, sizeof *out_ip);
+    } else {
+        struct ovs_16aligned_ip6_hdr *nh = dp_packet_l3(&pkt_out);
+        nh->ip6_plen = htons(new_l4_size);
+
+        /* IPv6 needs UDP checksum calculated */
+        uint32_t csum;
+        csum = packet_csum_pseudoheader6(nh);
+        csum = csum_continue(csum, out_udp, dp_packet_size(&pkt_out) -
+                             ((const unsigned char *)out_udp -
+                             (const unsigned char *)eth));
+        out_udp->udp_csum = csum_finish(csum);
+        if (!out_udp->udp_csum) {
+            out_udp->udp_csum = htons(0xffff);
+        }
+    }
 
     pin->packet = dp_packet_data(&pkt_out);
     pin->packet_len = dp_packet_size(&pkt_out);
@@ -983,7 +1002,11 @@ process_packet_in(const struct ofp_header *msg, struct controller_ctx *ctx)
         break;
 
     case ACTION_OPCODE_ND_NA:
-        pinctrl_handle_nd_na(&headers, &pin.flow_metadata, &userdata);
+        pinctrl_handle_nd_na(&headers, &pin.flow_metadata, &userdata, false);
+        break;
+
+    case ACTION_OPCODE_ND_NA_ROUTER:
+        pinctrl_handle_nd_na(&headers, &pin.flow_metadata, &userdata, true);
         break;
 
     case ACTION_OPCODE_PUT_ND:
@@ -1064,27 +1087,29 @@ pinctrl_run(struct controller_ctx *ctx,
 
     rconn_run(swconn);
 
-    if (rconn_is_connected(swconn)) {
-        if (conn_seq_no != rconn_get_connection_seqno(swconn)) {
-            pinctrl_setup(swconn);
-            conn_seq_no = rconn_get_connection_seqno(swconn);
-            flush_put_mac_bindings();
+    if (!rconn_is_connected(swconn)) {
+        return;
+    }
+
+    if (conn_seq_no != rconn_get_connection_seqno(swconn)) {
+        pinctrl_setup(swconn);
+        conn_seq_no = rconn_get_connection_seqno(swconn);
+        flush_put_mac_bindings();
+    }
+
+    /* Process a limited number of messages per call. */
+    for (int i = 0; i < 50; i++) {
+        struct ofpbuf *msg = rconn_recv(swconn);
+        if (!msg) {
+            break;
         }
 
-        /* Process a limited number of messages per call. */
-        for (int i = 0; i < 50; i++) {
-            struct ofpbuf *msg = rconn_recv(swconn);
-            if (!msg) {
-                break;
-            }
+        const struct ofp_header *oh = msg->data;
+        enum ofptype type;
 
-            const struct ofp_header *oh = msg->data;
-            enum ofptype type;
-
-            ofptype_decode(&type, oh);
-            pinctrl_recv(oh, type, ctx);
-            ofpbuf_delete(msg);
-        }
+        ofptype_decode(&type, oh);
+        pinctrl_recv(oh, type, ctx);
+        ofpbuf_delete(msg);
     }
 
     run_put_mac_bindings(ctx);
@@ -1249,7 +1274,8 @@ ipv6_ra_send(struct ipv6_ra_state *ra)
     dp_packet_use_stub(&packet, packet_stub, sizeof packet_stub);
     compose_nd_ra(&packet, ra->config->eth_src, ra->config->eth_dst,
             &ra->config->ipv6_src, &ra->config->ipv6_dst,
-            255, ra->config->mo_flags, 0, 0, 0, ra->config->mtu);
+            255, ra->config->mo_flags, htons(IPV6_ND_RA_LIFETIME), 0, 0,
+            ra->config->mtu);
 
     for (int i = 0; i < ra->config->prefixes.n_ipv6_addrs; i++) {
         ovs_be128 addr;
@@ -1371,6 +1397,7 @@ send_ipv6_ras(const struct controller_ctx *ctx, struct hmap *local_datapaths)
                 send_ipv6_ra_time = next_ra;
             }
         }
+        sbrec_port_binding_index_destroy_row(lpval);
     }
 
     /* Remove those that are no longer in the SB database */
@@ -2123,7 +2150,7 @@ reload_metadata(struct ofpbuf *ofpacts, const struct match *md)
 
 static void
 pinctrl_handle_nd_na(const struct flow *ip_flow, const struct match *md,
-                     struct ofpbuf *userdata)
+                     struct ofpbuf *userdata, bool is_router)
 {
     /* This action only works for IPv6 ND packets, and the switch should only
      * send us ND packets this way, but check here just to be sure. */
@@ -2137,13 +2164,15 @@ pinctrl_handle_nd_na(const struct flow *ip_flow, const struct match *md,
     struct dp_packet packet;
     dp_packet_use_stub(&packet, packet_stub, sizeof packet_stub);
 
-    /* xxx These flags are not exactly correct.  Look at section 7.2.4
-     * xxx of RFC 4861.  For example, we need to set ND_RSO_ROUTER for
-     * xxx router's interfaces and ND_RSO_SOLICITED only if it was
-     * xxx requested. */
+    /* These flags are not exactly correct.  Look at section 7.2.4
+     * of RFC 4861. */
+    uint32_t rso_flags = ND_RSO_SOLICITED | ND_RSO_OVERRIDE;
+    if (is_router) {
+        rso_flags |= ND_RSO_ROUTER;
+    }
     compose_nd_na(&packet, ip_flow->dl_dst, ip_flow->dl_src,
                   &ip_flow->nd_target, &ip_flow->ipv6_src,
-                  htonl(ND_RSO_SOLICITED | ND_RSO_OVERRIDE));
+                  htonl(rso_flags));
 
     /* Reload previous packet metadata and set actions from userdata. */
     set_actions_and_enqueue_msg(&packet, md, userdata);

@@ -907,6 +907,7 @@ netdev_vport_get_ifindex(const struct netdev *netdev_)
     NULL,                       /* get_carrier_resets */    \
     NULL,                       /* get_miimon */            \
     get_stats,                                              \
+    NULL,                       /* get_custom_stats */      \
                                                             \
     NULL,                       /* get_features */          \
     NULL,                       /* set_advertisements */    \
@@ -967,7 +968,7 @@ netdev_vport_tunnel_register(void)
         TUNNEL_CLASS("geneve", "genev_sys", netdev_geneve_build_header,
                                             netdev_tnl_push_udp_header,
                                             netdev_geneve_pop_header,
-                                            NULL),
+                                            NETDEV_VPORT_GET_IFINDEX),
         TUNNEL_CLASS("gre", "gre_sys", netdev_gre_build_header,
                                        netdev_gre_push_header,
                                        netdev_gre_pop_header,

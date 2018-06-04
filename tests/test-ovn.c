@@ -33,6 +33,7 @@
 #include "ovn/lex.h"
 #include "ovn/lib/logical-fields.h"
 #include "ovn/lib/ovn-l7.h"
+#include "ovn/lib/extend-table.h"
 #include "ovs-thread.h"
 #include "ovstest.h"
 #include "openvswitch/shash.h"
@@ -1207,11 +1208,12 @@ test_parse_actions(struct ovs_cmdl_context *ctx OVS_UNUSED)
     create_gen_opts(&dhcp_opts, &dhcpv6_opts, &nd_ra_opts);
 
     /* Initialize group ids. */
-    struct group_table group_table;
-    group_table.group_ids = bitmap_allocate(MAX_OVN_GROUPS);
-    bitmap_set1(group_table.group_ids, 0); /* Group id 0 is invalid. */
-    hmap_init(&group_table.desired_groups);
-    hmap_init(&group_table.existing_groups);
+    struct ovn_extend_table group_table;
+    ovn_extend_table_init(&group_table);
+
+    /* Initialize meter ids for QoS. */
+    struct ovn_extend_table meter_table;
+    ovn_extend_table_init(&meter_table);
 
     simap_init(&ports);
     simap_put(&ports, "eth0", 5);
@@ -1252,6 +1254,7 @@ test_parse_actions(struct ovs_cmdl_context *ctx OVS_UNUSED)
                 .aux = &ports,
                 .is_switch = true,
                 .group_table = &group_table,
+                .meter_table = &meter_table,
 
                 .pipeline = OVNACT_P_INGRESS,
                 .ingress_ptable = 8,

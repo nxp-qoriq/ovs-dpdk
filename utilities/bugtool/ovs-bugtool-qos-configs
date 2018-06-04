@@ -14,11 +14,16 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 #
-# Copyright (C) 2013 Nicira, Inc.
+# Copyright (C) 2017 Ericsson AB
 
-for bridge in `ovs-vsctl list-br`
+for br in `ovs-vsctl -- --real list-br`
 do
-    echo "ovs-ofctl show ${bridge}"
-    ovs-ofctl show "$bridge"
-    echo ""
+    for iface in $(ovs-vsctl list-ifaces ${br})
+    do
+        echo "Rate limiting configuration for ${iface} (of ${br}):"
+        ovs-vsctl list interface ${iface} | grep ingress
+        echo "Interface options:"
+        ovs-vsctl get Interface ${iface} options
+        echo ""
+    done
 done

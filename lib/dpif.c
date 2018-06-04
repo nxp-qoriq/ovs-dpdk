@@ -1217,7 +1217,7 @@ dpif_execute_helper_cb(void *aux_, struct dp_packet_batch *packets_,
              * that we supply as metadata.  We have to use a "set" action to
              * supply it. */
             if (md->tunnel.ip_dst) {
-                odp_put_tunnel_action(&md->tunnel, &execute_actions);
+                odp_put_tunnel_action(&md->tunnel, &execute_actions, NULL);
             }
             ofpbuf_put(&execute_actions, action, NLA_ALIGN(action->nla_len));
 
@@ -1275,6 +1275,7 @@ dpif_execute_helper_cb(void *aux_, struct dp_packet_batch *packets_,
     case OVS_ACTION_ATTR_CLONE:
     case OVS_ACTION_ATTR_PUSH_NSH:
     case OVS_ACTION_ATTR_POP_NSH:
+    case OVS_ACTION_ATTR_CT_CLEAR:
     case OVS_ACTION_ATTR_UNSPEC:
     case __OVS_ACTION_ATTR_MAX:
         OVS_NOT_REACHED();

@@ -359,6 +359,22 @@
         </p>
       </column>
 
+      <column name="other_config" key="tx-flush-interval"
+              type='{"type": "integer",
+                     "minInteger": 0, "maxInteger": 1000000}'>
+        <p>
+          Specifies the time in microseconds that a packet can wait in output
+          batch for sending i.e. amount of time that packet can spend in an
+          intermediate output queue before sending to netdev.
+          This option can be used to configure balance between throughput
+          and latency. Lower values decreases latency while higher values
+          may be useful to achieve higher performance.
+        </p>
+        <p>
+          Defaults to 0 i.e. instant packet sending (latency optimized).
+        </p>
+      </column>
+
       <column name="other_config" key="n-handler-threads"
               type='{"type": "integer", "minInteger": 1}'>
         <p>
@@ -2175,7 +2191,18 @@
           imprecisely for internal interfaces.</dd>
 
           <dt><code>tap</code></dt>
-          <dd>A TUN/TAP device managed by Open vSwitch.</dd>
+          <dd>
+            <p>
+              A TUN/TAP device managed by Open vSwitch.
+            </p>
+            <p>
+              Open vSwitch checks the interface state before send packets
+              to the device.  When it is <code>down</code>, the packets are
+              dropped and the tx_dropped statistic is updated accordingly.
+              Older versions of Open vSwitch did not check the interface state
+              and then the tx_packets was incremented along with tx_dropped.
+            </p>
+          </dd>
 
           <dt><code>geneve</code></dt>
           <dd>
@@ -2668,6 +2695,17 @@ ovs-vsctl add-port br0 p0 -- set Interface p0 type=patch options:peer=p1 \
           The value specifies the path to the socket associated with a vHost
           User client mode device that has been or will be created by QEMU.
           Only supported by dpdkvhostuserclient interfaces.
+        </p>
+      </column>
+
+      <column name="options" key="dq-zero-copy"
+              type='{"type": "boolean"}'>
+        <p>
+          The value specifies whether or not to enable dequeue zero copy on
+          the given interface.
+          Must be set before vhost-server-path is specified.
+          Only supported by dpdkvhostuserclient interfaces.
+          The feature is considered experimental.
         </p>
       </column>
 
@@ -3590,6 +3628,23 @@ ovs-vsctl add-port br0 p0 -- set Interface p0 type=patch options:peer=p1 \
               type='{"type": "boolean"}'>
         Set to <code>true</code> to enable flow control auto negotiation on
         physical ports. By default, auto-neg is disabled.
+      </column>
+    </group>
+
+    <group title="Link State Change detection mode">
+      <column name="options" key="dpdk-lsc-interrupt"
+              type='{"type": "boolean"}'>
+        <p>
+          Set this value to <code>true</code> to configure interrupt mode for
+          Link State Change (LSC) detection instead of poll mode for the DPDK
+          interface.
+        </p>
+        <p>
+          If this value is not set, poll mode is configured.
+        </p>
+        <p>
+          This parameter has an effect only on netdev dpdk interfaces.
+        </p>
       </column>
     </group>
 

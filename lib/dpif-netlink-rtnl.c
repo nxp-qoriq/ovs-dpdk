@@ -277,6 +277,15 @@ dpif_netlink_rtnl_create(const struct netdev_tunnel_config *tnl_cfg,
                          const char *name, enum ovs_vport_type type,
                          const char *kind, uint32_t flags)
 {
+    enum {
+        /* For performance, we want to use the largest MTU that the system
+         * supports.  Most existing tunnels will accept UINT16_MAX, treating it
+         * as the actual max MTU, but some do not.  Thus, we use a slightly
+         * smaller value, that should always be safe yet does not noticeably
+         * reduce performance. */
+        MAX_MTU = 65000
+    };
+
     size_t linkinfo_off, infodata_off;
     struct ifinfomsg *ifinfo;
     struct ofpbuf request;
@@ -287,7 +296,7 @@ dpif_netlink_rtnl_create(const struct netdev_tunnel_config *tnl_cfg,
     ifinfo = ofpbuf_put_zeros(&request, sizeof(struct ifinfomsg));
     ifinfo->ifi_change = ifinfo->ifi_flags = IFF_UP;
     nl_msg_put_string(&request, IFLA_IFNAME, name);
-    nl_msg_put_u32(&request, IFLA_MTU, UINT16_MAX);
+    nl_msg_put_u32(&request, IFLA_MTU, MAX_MTU);
     linkinfo_off = nl_msg_start_nested(&request, IFLA_LINKINFO);
     nl_msg_put_string(&request, IFLA_INFO_KIND, kind);
     infodata_off = nl_msg_start_nested(&request, IFLA_INFO_DATA);
@@ -329,6 +338,25 @@ dpif_netlink_rtnl_create(const struct netdev_tunnel_config *tnl_cfg,
     nl_msg_end_nested(&request, linkinfo_off);
 
     err = nl_transact(NETLINK_ROUTE, &request, NULL);
+    if (!err && type == OVS_VPORT_TYPE_GRE) {
+        /* Work around a bug in kernel GRE driver, which ignores IFLA_MTU in
+         * RTM_NEWLINK, by setting the MTU again.  See
+         * https://bugzilla.redhat.com/show_bug.cgi?id=1488484. */
+        ofpbuf_clear(&request);
+        nl_msg_put_nlmsghdr(&request, 0, RTM_SETLINK,
+                            NLM_F_REQUEST | NLM_F_ACK);
+        ofpbuf_put_zeros(&request, sizeof(struct ifinfomsg));
+        nl_msg_put_string(&request, IFLA_IFNAME, name);
+        nl_msg_put_u32(&request, IFLA_MTU, MAX_MTU);
+
+        int err2 = nl_transact(NETLINK_ROUTE, &request, NULL);
+        if (err2) {
+            static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(1, 5);
+
+            VLOG_WARN_RL(&rl, "setting MTU of tunnel %s failed (%s)",
+                         name, ovs_strerror(err2));
+        }
+    }
 
 exit:
     ofpbuf_uninit(&request);
