@@ -696,6 +696,11 @@ dpdk_calculate_mbufs(struct netdev_dpdk *dev, int mtu)
 {
     uint32_t n_mbufs;
 
+    if (getenv("DPDK_NUM_MBUF")) {
+        n_mbufs = atoi(getenv("DPDK_NUM_MBUF"));
+        return n_mbufs;
+    }
+
     if (!per_port_memory) {
         /* Shared memory are being used.
          * XXX: this is a really rough method of provisioning memory.
