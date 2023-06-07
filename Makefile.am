@@ -76,6 +76,7 @@ EXTRA_DIST = \
 	LICENSE \
 	MAINTAINERS.rst \
 	README.rst \
+	SCR.txt \
 	NOTICE \
 	.ci/dpdk-build.sh \
 	.ci/dpdk-prepare.sh \
