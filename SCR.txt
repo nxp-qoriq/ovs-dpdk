@@ -1,0 +1,27 @@
+Software Content Register
+--------------------------------------------
+
+Package:                   ovs-dpdk.git
+Version:                   3.1
+Outgoing License:          Apache License 2.0
+License File:              LICENSE, README.rst
+Package Category:          BSP
+Type of Content:           source
+Description and comments:  Open Virtual switch based on DPDK
+Release Location:          https://github.com/nxp-qoriq/ovs-dpdk -b lf-6.1.22-2.0.0
+Origin:                    OpenVSwitch (Apache License 2.0) - https://github.com/openvswitch/ovs/tree/branch-3.1
+                           NXP (Apache License 2.0)
+Exception:                 GDB commands and functions: Eelco Chaudron (GPL-2.0) - Separate tool for OVS debugging
+                           datapath, include/linux/tc_act/tc_vlan.h, tc_skbedit.h, tc_tunnel_key.h, tc_ct.h, tc_mpls.h - GNU GPL v2.
+                           build-aux/cccl - GNU GPL v2
+                           include/windows/getopt.h, lib/getopt_long.c, lib/conntrack-tcp.c - BSD-2-clause
+                           include/windows/netinet/icmp6.h, include/windows/netinet/ip6.h, lib/strsep.c BSD-3-clause -license
+
+Package:                   sflow
+Outgoing License:          Sun Industry Standards Source License 1.1 or InMon sFlow License
+License File:              http://host-sflow.sourceforge.net/sissl.html , http://www.inmon.com/technology/sflowlicense.txt
+Package Category:          Utility
+Description and comments:  flow library
+Type of content:           Source code
+Origin:                    Open Virtual switch based on DPDK.
+Location:                  lib/sflow
