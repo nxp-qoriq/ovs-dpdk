@@ -74,6 +74,7 @@ EXTRA_DIST = \
 	LICENSE \
 	MAINTAINERS.rst \
 	README.rst \
+	SCR.txt \
 	NOTICE \
 	.ci/linux-build.sh \
 	.ci/linux-prepare.sh \
