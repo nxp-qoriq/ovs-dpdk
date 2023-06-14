@@ -16,12 +16,4 @@ Exception:                 GDB commands and functions: Eelco Chaudron (GPL-2.0) 
                            build-aux/cccl - GNU GPL v2
                            include/windows/getopt.h, lib/getopt_long.c, lib/conntrack-tcp.c - BSD-2-clause
                            include/windows/netinet/icmp6.h, include/windows/netinet/ip6.h, lib/strsep.c BSD-3-clause -license
-
-Package:                   sflow
-Outgoing License:          Sun Industry Standards Source License 1.1 or InMon sFlow License
-License File:              http://host-sflow.sourceforge.net/sissl.html , http://www.inmon.com/technology/sflowlicense.txt
-Package Category:          Utility
-Description and comments:  flow library
-Type of content:           Source code
-Origin:                    Open Virtual switch based on DPDK.
-Location:                  lib/sflow
+                           lib/sflow*.[ch] - Sun Industry Standards Source License 1.1 or InMon sFlow License
