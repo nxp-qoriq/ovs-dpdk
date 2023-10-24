@@ -8,7 +8,7 @@ License File:              LICENSE, README.rst
 Package Category:          BSP
 Type of Content:           source
 Description and comments:  Open Virtual switch based on DPDK
-Release Location:          https://github.com/nxp-qoriq/ovs-dpdk -b lf-6.1.22-2.0.0
+Release Location:          https://github.com/nxp-qoriq/ovs-dpdk
 Origin:                    OpenVSwitch (Apache License 2.0) - https://github.com/openvswitch/ovs/tree/branch-3.1
                            NXP (Apache License 2.0)
 Exception:                 GDB commands and functions: Eelco Chaudron (GPL-2.0) - Separate tool for OVS debugging
