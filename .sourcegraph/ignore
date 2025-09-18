@@ -1,0 +1,35 @@
+# Ignore generated paths
+build/
+*/build/
+doc/
+license/
+
+# Ignore compiled files
+*.o
+*.so
+*.a
+*.mod.c
+*.ko
+*.d
+
+# Ignore temporary and swap files
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Ignore IDE and CI metadata
+.vscode/
+.git/
+.github/
+.ci/
+.editorconfig
+.gitattributes
+.gitignore
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
