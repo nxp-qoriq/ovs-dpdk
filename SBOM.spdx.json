@@ -1,0 +1,151 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-04-15T07:14:52Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.26"
+  },
+  "name": "ovs-dpdk-la12xx-sdk4.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/7f541bed-bbf8-4286-89f3-85791649c651",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651",
+      "name": "ovs-dpdk",
+      "versionInfo": "la12xx-sdk4.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-qoriq/ovs-dpdk -b la12xx-sdk4.0",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---1bc2bb56-1436-445e-8f65-7ff46860088c",
+      "name": "openvswitch-source",
+      "versionInfo": "3.7.0",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://openvswitch.org/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: ubuntu",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "8ecd1eee-e49f-4280-b899-93d7d8b46a69",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:deb/ubuntu/openvswitch-source@3.7.0-1?arch=all",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---6854ea4d-722d-4e15-b893-21c8627fadbf",
+      "name": "OVN (Open Virtual Network)",
+      "versionInfo": "3.7.0~git20260211.8c6ebf8",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://openvswitch.org",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: debian",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "5ef9ad4a-8fc8-4774-b047-32d93fc76b87",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:deb/debian/openvswitch@3.7.0~git20260211.8c6ebf8-1~1.gbp9127d2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---bb402aa9-be57-4fca-9964-ce409666ad92",
+      "name": "OVN (Open Virtual Network)",
+      "versionInfo": "3.7.1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://openvswitch.org",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: debian",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "72c4af0f-9ba6-40ae-8109-93d734b34199",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:deb/debian/openvswitch@3.7.1-1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---b255ce03-f36c-45d6-b789-d09acd559a37",
+      "name": "sortedcontainers",
+      "versionInfo": "2.4.0",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://pypi.python.org/pypi/sortedcontainers",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: alpine",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "ae9cbaab-4ebc-45e5-950b-d8f92328bb46",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/alpine/py3-sortedcontainers@2.4.0-r3?arch=noarch",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---1bc2bb56-1436-445e-8f65-7ff46860088c"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---6854ea4d-722d-4e15-b893-21c8627fadbf"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---b255ce03-f36c-45d6-b789-d09acd559a37"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-7f541bed-bbf8-4286-89f3-85791649c651---bb402aa9-be57-4fca-9964-ce409666ad92"
+    }
+  ]
+}

@@ -77,6 +77,7 @@ EXTRA_DIST = \
 	MAINTAINERS.rst \
 	README.rst \
 	SCR.txt \
+	SBOM.spdx.json \
 	NOTICE \
 	.ci/dpdk-build.sh \
 	.ci/dpdk-prepare.sh \
