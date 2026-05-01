@@ -76,6 +76,7 @@ EXTRA_DIST = \
 	LICENSE \
 	MAINTAINERS.rst \
 	README.rst \
+	readme_nxp.txt \
 	SCR.txt \
 	SBOM.spdx.json \
 	NOTICE \
